@@ -1,0 +1,16 @@
+body {
+    background-color: antiquewhite;
+    background-image: url("map.jpg");
+}
+
+h1 {
+    color: brown;
+}
+
+.greenText {
+    color: darkgreen;
+}
+
+/* p {
+    background-image: url('map.jpg');
+} */
