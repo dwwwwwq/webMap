@@ -1,16 +1,31 @@
 body {
-    background-color: antiquewhite;
-    background-image: url("map.jpg");
+    margin: 0;
+    background: white;
+    overflow: hidden;
 }
 
-h1 {
-    color: brown;
+#map {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
 }
 
-.greenText {
-    color: darkgreen;
+.piece {
+    position: absolute;
+    width: 150px;
+    height: auto;
+    transform: translate(-50%, -50%);
+    transition: left 1.5s, top 1.5s;
+    z-index: 2;
+    pointer-events: none;
 }
 
-/* p {
-    background-image: url('map.jpg');
-} */
+.line {
+    position: absolute;
+    height: 8px;
+    width: 100px;
+    object-fit: fill;
+    transform-origin: left center;
+    z-index: 1;
+    pointer-events: none;
+}
