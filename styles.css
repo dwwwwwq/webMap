@@ -17,7 +17,38 @@ body {
     transform: translate(-50%, -50%);
     transition: left 1.5s, top 1.5s;
     z-index: 2;
+    pointer-events: auto;
+
+}
+
+.piece:hover {
+    outline: 2px dashed blue;
+
+}
+
+.piece:hover+.numberLabel {
+    display: block;
+
+}
+
+.numberLabel {
+    position: absolute;
+    /* transform: translate(100px, -85px); */
+    /* font-size: 64px; */
+    font: 36px Arial, sans-serif;
+    color: blue;
+    z-index: 3;
     pointer-events: none;
+    display: none;
+    transition: none;
+}
+
+.showFrames .numberLabel {
+    display: block;
+}
+
+.showFrames .piece {
+    outline: 2px dashed blue;
 }
 
 .line {

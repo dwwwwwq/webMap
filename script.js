@@ -4,6 +4,7 @@ let map = document.getElementById("map");
 let pieces = [];
 let lines = [];
 let connections = [];
+let number
 
 // 1. 创建9张地图碎片
 for (let i = 1; i <= 9; i++) {
@@ -16,6 +17,13 @@ for (let i = 1; i <= 9; i++) {
 
     map.appendChild(img);
     pieces.push(img);
+
+    let numberLabel = document.createElement("span");
+    numberLabel.innerText = i;
+    numberLabel.className = "numberLabel";
+
+    map.appendChild(numberLabel);
+    img.numberLabel = numberLabel;
 }
 
 // 2. 创建19张原始连接线
@@ -41,6 +49,9 @@ function rearrange() {
 
         pieces[i].style.left = x + "%";
         pieces[i].style.top = y + "%";
+
+        // pieces[i].numberLabel.style.left = x + "%";
+        // pieces[i].numberLabel.style.top = y + "%";
     }
 
     makeConnections();
@@ -102,7 +113,22 @@ function updateLines() {
             "translateY(-50%) rotate(" + angle + "deg)";
     }
 
+    for (let i = 0; i < pieces.length; i++) {
+
+        let rect = pieces[i].getBoundingClientRect();
+
+        let x = rect.right - mapRect.left + 8;
+        let y = rect.top - mapRect.top - 10;
+
+        pieces[i].numberLabel.style.left = x + "px";
+        pieces[i].numberLabel.style.top = y + "px";
+    }
+
     requestAnimationFrame(updateLines);
+}
+
+function toggleFrames() {
+    map.classList.toggle("showFrames");
 }
 
 // 6. 点击网页重新排列
