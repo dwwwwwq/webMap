@@ -1,6 +1,4 @@
-
 const map = document.getElementById("map");
-
 
 const terrainCanvas = document.createElement("canvas");
 terrainCanvas.id = "terrainCanvas";
@@ -27,6 +25,9 @@ let lines = [];
 let connections = [];
 let cityEnvironment = null;
 let terrainSeed = Math.random() * 10000;
+let isGeneratingCity = false;
+let selectedPopulation = 0;
+let selectedPopulationRatio = 0;
 
 // 2. Create nine map pieces
 for (let i = 1; i <= 9; i++) {
@@ -59,39 +60,52 @@ for (let i = 1; i <= 19; i++) {
     lines.push(img);
 }
 
-// 4. Rearrange districts
-function rearrange() {
-    
-    terrainSeed = Math.random() * 10000;
+// Generate a complete new city
+async function rearrange() {
 
-    for (let i = 0; i < pieces.length; i++) {
-        const x = 10 + Math.random() * 80;
-        const y = 10 + Math.random() * 80;
+    if (isGeneratingCity) return;
 
-        districts[i].x = x;
-        districts[i].y = y;
+    isGeneratingCity = true;
 
-        pieces[i].style.left = x + "%";
-        pieces[i].style.top = y + "%";
+    try {
+
+        terrainSeed = Math.random() * 10000;
+
+        // 1. Generate population
+        generatePopulation();
+
+        // 2. Rearrange districts
+        for (let i = 0; i < pieces.length; i++) {
+
+            const x = 10 + Math.random() * 80;
+            const y = 10 + Math.random() * 80;
+
+            districts[i].x = x;
+            districts[i].y = y;
+
+            pieces[i].style.left = x + "%";
+            pieces[i].style.top = y + "%";
+        }
+
+        // 3. Generate Gravity Model connections
+        makeConnections();
+
+        // 4. Generate new geographic data and terrain
+        await generateGeographicData();
+
+        // 5. Update information
+        updateCityInfo();
+
+        console.table(districts);
+
+    } catch (error) {
+
+        console.error("City generation failed:", error);
+
+    } finally {
+
+        isGeneratingCity = false;
     }
-
-    makeConnections();
-
-    if (cityEnvironment) {
-        generateTerrainBackground();
-    }
-
-    console.table(districts);
-
-    const distance = calculateDistance(
-        districts[0],
-        districts[1]
-    );
-
-    console.log(
-        "Distance between Residential A and Market:",
-        distance
-    );
 }
 
 // 5. Calculate relative district distance
@@ -102,6 +116,277 @@ function calculateDistance(a, b) {
     return Math.sqrt(dx * dx + dy * dy);
 }
 
+// Calculate gravitational interaction between two districts
+function calculateGravity(a, b) {
+
+    const beta = 1.5;
+
+    // Distance in normalized map coordinates
+    const distance = Math.max(
+        calculateDistance(a, b),
+        5
+    );
+
+    const gravity =
+        (a.population * b.population) /
+        Math.pow(distance, beta);
+
+    return gravity;
+}
+// Generate city population and distribute it across districts
+function generatePopulation() {
+
+    const citySizeCategories = [
+        {
+            name: "Town / Settlement",
+            min: 5000,
+            max: 49999
+        },
+        {
+            name: "Very Small City",
+            min: 50000,
+            max: 249999
+        },
+        {
+            name: "Small City",
+            min: 250000,
+            max: 999999
+        },
+        {
+            name: "Medium-sized City",
+            min: 1000000,
+            max: 4999999
+        }
+    ];
+
+    // 2. Randomly select a city size category
+    const selectedCategory = citySizeCategories[
+        Math.floor(Math.random() * citySizeCategories.length)
+    ];
+
+    // 3. Generate total population
+    totalPopulation = Math.floor(
+        selectedCategory.min +
+        Math.random() *
+        (selectedCategory.max - selectedCategory.min + 1)
+    );
+
+    console.log("City Size:", selectedCategory.name);
+
+    // 4. Selected districts represent 30%–50% of the city
+    selectedPopulationRatio = 0.3 + Math.random() * 0.2;
+
+    selectedPopulation = Math.round(
+        totalPopulation * selectedPopulationRatio
+    );
+
+    console.log("City Population:", totalPopulation);
+    console.log("Selected District Population:", selectedPopulation);
+    console.log(
+        "Selected Population Ratio:",
+        (selectedPopulation / totalPopulation * 100).toFixed(2) + "%"
+    );
+
+    // 2. Population weights for nine districts
+    const populationWeights = [
+        25, // Residential A
+        10, // Market
+        8,  // Industrial
+        7,  // Agricultural
+        10, // Cultural / Education
+        5,  // Transport Hub
+        2,  // Park / Green
+        5,  // Logistics
+        28  // Residential B
+    ];
+
+    // 3. Add random variation to each district
+    const randomizedWeights = populationWeights.map(weight => {
+        const variation = 0.7 + Math.random() * 0.6;
+        return weight * variation;
+    });
+
+    // 4. Calculate total weight
+    const totalWeight = randomizedWeights.reduce(
+        (sum, weight) => sum + weight,
+        0
+    );
+
+    // 5. Calculate exact population shares
+    const exactPopulations = randomizedWeights.map(weight =>
+        selectedPopulation * weight / totalWeight
+    );
+
+    // 6. Assign integer populations
+    const populations = exactPopulations.map(value =>
+        Math.floor(value)
+    );
+
+    // 7. Distribute remaining people by largest remainder
+    let remaining = selectedPopulation -
+        populations.reduce((sum, value) => sum + value, 0);
+
+    const remainderOrder = exactPopulations
+        .map((value, index) => ({
+            index,
+            remainder: value - populations[index]
+        }))
+        .sort((a, b) => b.remainder - a.remainder);
+
+    for (let i = 0; i < remaining; i++) {
+        populations[remainderOrder[i].index]++;
+    }
+
+    // 8. Update district population data
+    districts.forEach((district, index) => {
+        district.population = populations[index];
+    });
+
+    // 9. Display results in console
+    console.log("Total Population:", totalPopulation);
+
+    console.table(
+        districts.map(district => ({
+            District: district.name,
+            Population: district.population,
+            Percentage:
+                (district.population / selectedPopulation * 100).toFixed(2) + "%"
+        }))
+    );
+}
+
+// ========================================
+// UPDATE CITY INFORMATION
+// ========================================
+
+function updateCityInfo() {
+
+    if (!cityEnvironment || !totalPopulation) return;
+
+    const formatNumber = number =>
+        Math.round(number).toLocaleString("en-US");
+
+    const formatCoordinate = (value, positive, negative) =>
+        Math.abs(value).toFixed(3) + "° " +
+        (value >= 0 ? positive : negative);
+
+    const citySize =
+        totalPopulation < 50000
+            ? "Town / Settlement"
+            : totalPopulation < 250000
+            ? "Very Small City"
+            : totalPopulation < 1000000
+            ? "Small City"
+            : "Medium-sized City";
+
+    document.getElementById("cityType").textContent =
+        citySize;
+
+    document.getElementById("cityCoordinates").textContent =
+        formatCoordinate(cityEnvironment.latitude, "N", "S") +
+        ", " +
+        formatCoordinate(cityEnvironment.longitude, "E", "W");
+
+    document.getElementById("cityPopulation").textContent =
+        formatNumber(totalPopulation);
+
+    const actualSelectedPopulation = districts.reduce(
+        (sum, district) => sum + district.population,
+        0
+    );
+
+    const ratio =
+        actualSelectedPopulation / totalPopulation * 100;
+
+    document.getElementById("selectedPopulationInfo").textContent =
+        formatNumber(actualSelectedPopulation) +
+        " (" + ratio.toFixed(1) + "%)";
+
+    document.getElementById("cityTerrain").textContent =
+        cityEnvironment.terrainType;
+
+    document.getElementById("cityTemperature").textContent =
+        cityEnvironment.annualTemperature.toFixed(1) + " °C";
+
+    document.getElementById("cityPrecipitation").textContent =
+        formatNumber(cityEnvironment.annualPrecipitation) +
+        " mm/year";
+}
+
+// ========================================
+// DISTRICT TOOLTIP
+// ========================================
+
+function initializeDistrictTooltips() {
+
+    const tooltip = document.getElementById("districtTooltip");
+
+    pieces.forEach((piece, index) => {
+
+        piece.addEventListener("mouseenter", () => {
+
+            const district = districts[index];
+
+            const selectedTotal = districts.reduce(
+                (sum, d) => sum + d.population,
+                0
+            );
+
+            const share = selectedTotal > 0
+                ? district.population / selectedTotal * 100
+                : 0;
+
+            tooltip.innerHTML = `
+                <div class="tooltipLabel">
+                    DISTRICT / ${String(district.id).padStart(2, "0")}
+                </div>
+
+                <div class="tooltipTitle">
+                    ${district.name}
+                </div>
+
+                <div class="tooltipRow">
+                    <span>Population</span>
+                    <span>${district.population.toLocaleString("en-US")}</span>
+                </div>
+
+                <div class="tooltipRow">
+                    <span>Selected share</span>
+                    <span>${share.toFixed(1)}%</span>
+                </div>
+            `;
+
+            tooltip.style.display = "block";
+        });
+
+        piece.addEventListener("mousemove", event => {
+
+            const padding = 12;
+            const tooltipWidth = tooltip.offsetWidth;
+            const tooltipHeight = tooltip.offsetHeight;
+
+            const left = Math.min(
+                event.clientX + 18,
+                window.innerWidth - tooltipWidth - padding
+            );
+
+            const top = Math.min(
+                event.clientY + 18,
+                window.innerHeight - tooltipHeight - padding
+            );
+
+            tooltip.style.left =
+                Math.max(padding, left) + "px";
+
+            tooltip.style.top =
+                Math.max(padding, top) + "px";
+        });
+
+        piece.addEventListener("mouseleave", () => {
+            tooltip.style.display = "none";
+        });
+    });
+}
 // 6. Reference locations for API testing
 const geographicSeeds = [
     { latitude: 47.55, longitude: 13.40 },
@@ -299,6 +584,7 @@ async function generateGeographicData() {
 
         console.log("Geographic Data:", cityEnvironment);
         generateTerrainBackground();
+        updateCityInfo();
 
     } catch (error) {
         console.error("Geographic API Error:", error);
@@ -842,25 +1128,94 @@ function generateTerrainBackground() {
     );
 }
 
-// 10. Generate nineteen random connections
 function makeConnections() {
+
     connections = [];
 
-    for (let i = 0; i < 19; i++) {
-        const a = Math.floor(Math.random() * 9);
-        let b = Math.floor(Math.random() * 9);
+    const possibleConnections = [];
 
-        while (a === b) {
-            b = Math.floor(Math.random() * 9);
+    // 1. Calculate gravity for all 36 district pairs
+    for (let i = 0; i < districts.length; i++) {
+        for (let j = i + 1; j < districts.length; j++) {
+
+            const gravity = calculateGravity(
+                districts[i],
+                districts[j]
+            );
+
+            possibleConnections.push({
+                a: i,
+                b: j,
+                gravity: gravity,
+                count: 0
+            });
+        }
+    }
+
+    // 2. Weighted random selection
+    // The same pair can be selected multiple times
+    for (let i = 0; i < lines.length; i++) {
+
+        // Soften extreme differences between gravity values
+        const weights = possibleConnections.map(connection =>
+            Math.sqrt(connection.gravity)
+        );
+
+        const totalWeight = weights.reduce(
+            (sum, weight) => sum + weight,
+            0
+        );
+
+        let randomValue = Math.random() * totalWeight;
+        let selectedIndex = weights.length - 1;
+
+        for (let j = 0; j < weights.length; j++) {
+
+            randomValue -= weights[j];
+
+            if (randomValue <= 0) {
+                selectedIndex = j;
+                break;
+            }
         }
 
-        connections.push([a, b]);
+        const selected = possibleConnections[selectedIndex];
+
+        selected.count++;
+
+        connections.push([
+            selected.a,
+            selected.b
+        ]);
     }
+
+    // 3. Show how many lines each pair received
+    console.table(
+        possibleConnections
+            .filter(connection => connection.count > 0)
+            .sort((a, b) => b.count - a.count)
+            .map(connection => ({
+                From: districts[connection.a].name,
+                To: districts[connection.b].name,
+                Gravity: connection.gravity.toFixed(2),
+                Lines: connection.count
+            }))
+    );
+
+    console.log("Total Lines:", connections.length);
 }
 
 // 11. Update line positions and number labels
 function updateLines() {
     const mapRect = map.getBoundingClientRect();
+    // Count repeated connections
+    const pairTotals = {};
+    const pairSeen = {};
+
+    connections.forEach(([a, b]) => {
+        const key = `${Math.min(a, b)}-${Math.max(a, b)}`;
+        pairTotals[key] = (pairTotals[key] || 0) + 1;
+    });
 
     for (let i = 0; i < lines.length; i++) {
         const a = pieces[connections[i][0]];
@@ -887,11 +1242,35 @@ function updateLines() {
         const distance = Math.sqrt(dx * dx + dy * dy);
         const angle = Math.atan2(dy, dx) * 180 / Math.PI;
 
-        lines[i].style.left = x1 + "px";
-        lines[i].style.top = y1 + "px";
-        lines[i].style.width = distance + "px";
-        lines[i].style.transform =
-            "translateY(-50%) rotate(" + angle + "deg)";
+        // Identify this connection pair
+const [indexA, indexB] = connections[i];
+
+const key =
+    `${Math.min(indexA, indexB)}-${Math.max(indexA, indexB)}`;
+
+    const total = pairTotals[key];
+
+    const order = pairSeen[key] || 0;
+    pairSeen[key] = order + 1;
+
+    // Spread repeated lines around the centerline
+    const spacing = 7;
+    const offset = (order - (total - 1) / 2) * spacing;
+
+    // Perpendicular direction
+    const perpendicularX = -dy / (distance || 1);
+    const perpendicularY = dx / (distance || 1);
+
+    lines[i].style.left =
+        (x1 + perpendicularX * offset) + "px";
+
+    lines[i].style.top =
+        (y1 + perpendicularY * offset) + "px";
+
+    lines[i].style.width = distance + "px";
+
+    lines[i].style.transform =
+        "translateY(-50%) rotate(" + angle + "deg)";
     }
 
     for (let i = 0; i < pieces.length; i++) {
@@ -918,4 +1297,4 @@ document.addEventListener("click", rearrange);
 // 14. Initialize
 rearrange();
 updateLines();
-generateGeographicData();
+initializeDistrictTooltips();

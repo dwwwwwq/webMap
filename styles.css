@@ -60,3 +60,95 @@ body {
     z-index: 1;
     pointer-events: none;
 }
+
+/* ========================================
+   CITY INFORMATION
+======================================== */
+
+#cityInfo {
+    position: fixed;
+    top: 45px;
+    left: 25px;
+    width: 210px;
+
+    z-index: 10;
+    pointer-events: none;
+
+    font-family: Arial, sans-serif;
+    color: #242B53;
+
+    background: rgba(255, 255, 255, 0.88);
+    padding: 15px;
+}
+
+.infoLabel {
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: #777;
+    margin-top: 13px;
+    margin-bottom: 4px;
+}
+
+#cityType {
+    font-size: 22px;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+.infoDivider {
+    height: 1px;
+    background: #CCC;
+    margin-top: 15px;
+    margin-bottom: 10px;
+}
+
+#cityCoordinates,
+#cityPopulation,
+#selectedPopulationInfo,
+#cityTerrain,
+#cityTemperature,
+#cityPrecipitation {
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* ========================================
+   DISTRICT TOOLTIP
+======================================== */
+
+#districtTooltip {
+    position: fixed;
+    display: none;
+
+    z-index: 20;
+    pointer-events: none;
+
+    width: 190px;
+    padding: 14px;
+
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid #242B53;
+
+    color: #242B53;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.tooltipLabel {
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: #777;
+}
+
+.tooltipTitle {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 5px 0 10px;
+}
+
+.tooltipRow {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}

@@ -10,9 +10,40 @@
 
 <body>
 
-    <button onclick="event.stopPropagation(); toggleFrames()">Show Frames</button>
+    <button onclick="event.stopPropagation(); toggleFrames()">
+    Show Frames
+    </button>
 
     <div id="map"></div>
+
+    <!-- City information: always visible -->
+    <div id="cityInfo">
+        <div class="infoLabel">GENERATED CITY</div>
+        <div id="cityType">Generating...</div>
+
+        <div class="infoDivider"></div>
+
+        <div class="infoLabel">LOCATION</div>
+        <div id="cityCoordinates">--</div>
+
+        <div class="infoLabel">CITY POPULATION</div>
+        <div id="cityPopulation">--</div>
+
+        <div class="infoLabel">SELECTED DISTRICTS</div>
+        <div id="selectedPopulationInfo">--</div>
+
+        <div class="infoLabel">TERRAIN</div>
+        <div id="cityTerrain">--</div>
+
+        <div class="infoLabel">ANNUAL TEMPERATURE</div>
+        <div id="cityTemperature">--</div>
+
+        <div class="infoLabel">ANNUAL PRECIPITATION</div>
+        <div id="cityPrecipitation">--</div>
+    </div>
+
+    <!-- District information: visible on hover -->
+    <div id="districtTooltip"></div>
 
     <script src="script.js"></script>
 
