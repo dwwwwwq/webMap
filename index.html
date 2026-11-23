@@ -1,54 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>atlas map</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>atlas map</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
-
 <body>
-
-    <button onclick="event.stopPropagation(); toggleFrames()">
-    Show Frames
-    </button>
-
-    <div id="map"></div>
-
-    <!-- City information: always visible -->
-    <div id="cityInfo">
-        <div class="infoLabel">GENERATED CITY</div>
-        <div id="cityType">Generating...</div>
-
-        <div class="infoDivider"></div>
-
-        <div class="infoLabel">LOCATION</div>
-        <div id="cityCoordinates">--</div>
-
-        <div class="infoLabel">CITY POPULATION</div>
-        <div id="cityPopulation">--</div>
-
-        <div class="infoLabel">SELECTED DISTRICTS</div>
-        <div id="selectedPopulationInfo">--</div>
-
-        <div class="infoLabel">TERRAIN</div>
-        <div id="cityTerrain">--</div>
-
-        <div class="infoLabel">ANNUAL TEMPERATURE</div>
-        <div id="cityTemperature">--</div>
-
-        <div class="infoLabel">ANNUAL PRECIPITATION</div>
-        <div id="cityPrecipitation">--</div>
-    </div>
-
-    <!-- District information: visible on hover -->
-    <div id="districtTooltip"></div>
-
-    <script src="script.js"></script>
-
-
-
+  <button id="framesButton" onclick="event.stopPropagation(); toggleFrames()">Show Frames</button>
+  <div id="map"></div>
+  <div id="cityInfo">
+    <div class="infoLabel">GENERATED CITY</div>
+    <div id="cityType">Generating...</div>
+    <div class="infoDivider"></div>
+    <div class="infoLabel">LOCATION</div><div id="cityCoordinates">--</div>
+    <div class="infoLabel">CITY POPULATION</div><div id="cityPopulation">--</div>
+    <div class="infoLabel">SELECTED DISTRICTS</div><div id="selectedPopulationInfo">--</div>
+    <div class="infoLabel">TERRAIN</div><div id="cityTerrain">--</div>
+    <div class="infoLabel">ANNUAL TEMPERATURE</div><div id="cityTemperature">--</div>
+    <div class="infoLabel">ANNUAL PRECIPITATION</div><div id="cityPrecipitation">--</div>
+  </div>
+  <div id="districtTooltip"></div>
+  <script src="script.js"></script>
 </body>
-
 </html>
